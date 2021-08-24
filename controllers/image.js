@@ -22,12 +22,20 @@ const handleImage = (req, res, db) => {
     .returning('entries')
     .then(entries => {
       if (entries.length) {
-        res.json(entries[0])
+        db('users')
+          .select('id', 'entries', 'name')
+          .rank('rank', db.raw('order by ?? desc', ['entries']))
+          .then(rankedUsers => {
+            res.json(rankedUsers.find(user => user.id === id).rank)
+          })
       } else {
         res.status(400).json('User not found')
       }
     })
-    .catch(err => res.status(400).json('Error updating entries'))
+    .catch(err => {
+      res.status(400).json('Error updating entries')
+      console.log(err)
+    })
 }
 
 module.exports = {
