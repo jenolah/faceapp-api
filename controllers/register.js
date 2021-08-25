@@ -36,7 +36,13 @@ const handleRegister = (req, res, db, bcrypt) => {
               joined: new Date(),
             })
             .then(user => {
-              res.json(user[0])
+              db('users')
+              .select('id', 'entries', 'name')
+              .rank('rank', db.raw('order by ?? desc', ['entries']))
+              .then(rankedUsers => {
+                user[0].rank = rankedUsers.find(usr => usr.id === user[0].id).rank
+                res.json(user[0])
+              })
             })
         })
         .then(trx.commit)
