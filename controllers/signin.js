@@ -20,7 +20,15 @@ const handleSignin = (db, bcrypt) => (req, res) => {
           .from('users')
           .where('email', '=', email)
           .then(user => {
-            res.json(user[0])
+            var rank = 0
+            db('users')
+              .select('id', 'entries', 'name')
+              .rank('rank', db.raw('order by ?? desc', ['entries']))
+              .then(rankedUsers => {
+                rank = rankedUsers.find(usr => usr.id === user[0].id).rank
+                user[0].rank = rank
+                res.json(user[0])
+              })
           })
           .catch(err => res.status(400).json('unable to get user'))
       } else {
