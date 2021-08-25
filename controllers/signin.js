@@ -20,13 +20,11 @@ const handleSignin = (db, bcrypt) => (req, res) => {
           .from('users')
           .where('email', '=', email)
           .then(user => {
-            var rank = 0
             db('users')
               .select('id', 'entries', 'name')
               .rank('rank', db.raw('order by ?? desc', ['entries']))
               .then(rankedUsers => {
-                rank = rankedUsers.find(usr => usr.id === user[0].id).rank
-                user[0].rank = rank
+                user[0].rank = rankedUsers.find(usr => usr.id === user[0].id).rank
                 res.json(user[0])
               })
           })

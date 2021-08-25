@@ -5,7 +5,13 @@ const handleProfileGet = (req, res, db) => {
     .where({ id: id })
     .then(user => {
       if (user.length) {
-        res.json(user[0])
+        db('users')
+          .select('id', 'entries', 'name')
+          .rank('rank', db.raw('order by ?? desc', ['entries']))
+          .then(rankedUsers => {
+            user[0].rank = rankedUsers.find(usr => usr.id === user[0].id).rank
+            res.json(user[0])
+          })
       } else {
         res.status(400).json('Not found')
       }
