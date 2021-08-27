@@ -38,11 +38,11 @@ app.get('/profile/:id', async (req, res) => {
   profile.handleProfileGet(req, res, db)
 })
 
-app.put('/image', (req, res) => {
+app.put('/image', async (req, res) => {
   image.handleImage(req, res, db)
 })
 
-app.post('/imageurl', (req, res) => {
+app.post('/imageurl', async (req, res) => {
   image.handleApiCall(req, res)
 })
 
