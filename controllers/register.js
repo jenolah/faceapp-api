@@ -1,4 +1,4 @@
-const handleRegister = (req, res, db, bcrypt) => {
+const handleRegister = async (req, res, db, bcrypt) => {
   const { email, name, password } = req.body
   const saltRounds = 10
 
@@ -17,38 +17,38 @@ const handleRegister = (req, res, db, bcrypt) => {
   } else if (!passwordRegex.test(password)) {
     return res.status(400).json('invalid password')
   }
+  const hash = await bcrypt.hash(password, saltRounds)
 
-  bcrypt.hash(password, saltRounds, function(err, hash) {
-    db.transaction(trx => {
-      trx
+  try {
+    db.transaction(async trx => {
+      const loginEmail = await trx
         .insert({
           hash: hash,
           email: email,
         })
         .into('login')
         .returning('email')
-        .then(loginEmail => {
-          return trx('users')
-            .returning('*')
-            .insert({
-              name: name,
-              email: loginEmail[0],
-              joined: new Date(),
-            })
-            .then(user => {
-              db('users')
-              .select('id', 'entries', 'name')
-              .rank('rank', db.raw('order by ?? desc', ['entries']))
-              .then(rankedUsers => {
-                user[0].rank = rankedUsers.find(usr => usr.id === user[0].id).rank
-                res.json(user[0])
-              })
-            })
+
+      const newUser = await trx('users')
+        .insert({
+          name: name,
+          email: loginEmail[0],
+          joined: new Date(),
         })
-        .then(trx.commit)
-        .catch(trx.rollback)
-    }).catch(err => res.status(400).json('unable to register'))
-  })
+        .returning('*')
+
+      const rankedUsers = await trx('users')
+        .select('id', 'entries', 'name')
+        .rank('rank', db.raw('order by ?? desc', ['entries']))
+
+      newUser[0].rank = rankedUsers.find(usr => usr.id === newUser[0].id).rank
+
+      res.json(newUser[0])
+    })
+  } catch (err) {
+    console.log(err)
+    res.status(400).json('Unable to register')
+  }
 }
 
 module.exports = {

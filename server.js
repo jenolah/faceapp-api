@@ -28,7 +28,7 @@ app.listen(3004, () => {
 
 app.post('/signin', signin.handleSignin(db, bcrypt))
 
-app.post('/register', (req, res) => {
+app.post('/register', async (req, res) => {
   register.handleRegister(req, res, db, bcrypt)
 })
 
