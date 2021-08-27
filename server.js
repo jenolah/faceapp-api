@@ -34,7 +34,7 @@ app.post('/register', async (req, res) => {
   register.handleRegister(req, res, db, bcrypt)
 })
 
-app.get('/profile/:id', (req, res) => {
+app.get('/profile/:id', async (req, res) => {
   profile.handleProfileGet(req, res, db)
 })
 
