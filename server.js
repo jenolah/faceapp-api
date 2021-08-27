@@ -26,7 +26,9 @@ app.listen(3004, () => {
   console.log('app running on port 3004')
 })
 
-app.post('/signin', signin.handleSignin(db, bcrypt))
+app.post('/signin', async (req, res) => {
+  signin.handleSignin(req, res, db, bcrypt)
+})
 
 app.post('/register', async (req, res) => {
   register.handleRegister(req, res, db, bcrypt)
